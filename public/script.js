@@ -141,7 +141,8 @@ async function append() {
     let mediaItem;
     try {
         ++numLoading;
-        //const apod = await getRandomApod();
+        const apod = await getRandomApod();
+        /*
         const apod = {
             date: "2017-07-04",
             explanation: "What if you could go right into a cluster where stars are forming? A one-minute, time-lapse, video visualization of just this has been made with 3D computer modeling of the region surrounding the star cluster Westerlund 2, based on images from the Hubble Space Telescope in visible and infrared light. Westerlund 2 spans about 10 light years across and lies about 20,000 light years distant toward the constellation of the Ship's Keel (Carina). As the illustrative animation begins, the greater Gum 29 nebula fills the screen, with the young cluster of bright stars visible in the center.  Stars zip past you as you approach the cluster. Soon your imaginary ship pivots and you pass over light-year long pillars of interstellar gas and dust.  Strong winds and radiation from massive young stars destroy all but the densest nearby dust clumps, leaving these pillars in their shadows -- many pointing back toward the cluster center. Last, you pass into the top of the star cluster and survey hundreds of the most massive stars known.    Open Science: Browse 1,500+ codes in the Astrophysics Source Code Library",
@@ -150,6 +151,7 @@ async function append() {
             title: "Celestial Fireworks: Into Star Cluster Westerlund 2",
             url: "https://www.youtube.com/embed/dtY44sPNHcU?rel=0"
         };
+        */
         //console.log(apod);
         if(apod.url && apod.url.substr(0, 2) === '//') {
             apod.url = 'https://' + apod.url;
