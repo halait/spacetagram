@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang='en'>
+    <head>
+        <meta charset='UTF-8'>
+        <meta name='viewport' content='width=device-width, initial-scale=1'>
+        <link rel="stylesheet" href="styles.css">
+        <link rel="icon" type="image/png" href="icon.png">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto">
+        <title>Spacetagram</title>
+    </head>
+    <body>
+        <h1 id='site-heading' class='page-width'>Spacetogram</h1>
+
+        <template id='media-item'>
+            <style>
+                :host {
+                    display: block;
+                    background-color: #222;
+                    --padding: 1rem;
+                }
+                img, video, #iframe-container {
+                    display: block;
+                    width: 100%;
+                    height: auto;
+                }
+                iframe {
+                    border: 0;
+                    height: 100%;
+                    width: 100%;
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                }
+                #title {
+                    margin: 0;
+                    padding: var(--padding);
+                }
+                #content {
+                    padding: var(--padding)
+                }
+                time {
+                    margin-bottom: var(--padding);
+                    font-weight: 700;
+                    display: block;
+                }
+                #iframe-container {
+                    padding-top: 56.25%;
+                    position: relative;
+                }
+                #more-btn {
+                    color: #88f;
+                    cursor: pointer;
+                }
+                @media screen and (min-width: 64rem) {
+                    :host {
+                        --padding: 2rem;
+                    }
+                }
+            </style>
+            <h2 id='title'>Title</h2>
+
+            <div id='content'>
+                <time id='date'></time>
+                <p id='description'>
+                    <span id='description-text'></span>
+                    <span id='more-btn'>more</span>
+                </p>
+            </div>
+        </template>
+
+
+        <div id='container' class='hybrid-width'></div>
+        
+
+        <script src='script.js'></script>
+    </body>
+</html>
