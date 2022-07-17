@@ -5,6 +5,12 @@ body {
     font-family: "Roboto", sans-serif;
     line-height: 1.5rem;
 }
+body::-webkit-scrollbar,body::-webkit-scrollbar-track {
+    background-color: #444;
+}
+body::-webkit-scrollbar-thumb {
+    background-color: #888;
+}
 media-item {
     margin-bottom: 2rem;
     max-width: 100%;
@@ -12,24 +18,46 @@ media-item {
     box-sizing: border-box;
     margin: 0 auto 2rem;
 }
-body::-webkit-scrollbar,body::-webkit-scrollbar-track {
-    background-color: #444;
+button {
+    background-color: inherit;
+    color: inherit;
+    border: solid 1px #fff;
+    padding: 0.5rem 1rem;
 }
-body::-webkit-scrollbar-thumb {
-    background-color: #888;
+button:hover {
+    background-color: #222;
+    cursor: pointer;
 }
+
 .page-width {
     max-width: 80rem;
     padding: 0 1rem;
     margin: 0 auto;
 }
-#site-heading {
+#site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin: 2rem auto;
 }
-@media screen and (min-width: 64rem) {
-    media-item {
-        margin-bottom: 4rem;
+#spinner {
+    fill: currentColor;
+    display: block;
+    margin: 0 auto;
+    height: 4rem;
+    width: 4rem;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
     }
+
+    to {
+        transform: rotate(1turn);
+    }
+}
+@media screen and (min-width: 64rem) {
     .hybrid-width {
         max-width: 80rem;
         margin: 0 auto;

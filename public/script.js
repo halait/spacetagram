@@ -5,7 +5,7 @@ class MediaItem extends HTMLElement {
         super();
         let template = document.getElementById('media-item');
         let templateContent = template.content;
-        this.attachShadow({mode: 'open'}).appendChild(templateContent.cloneNode(true));
+        this.attachShadow({ mode: 'open' }).appendChild(templateContent.cloneNode(true));
     }
 
     async setMedia(apod) {
@@ -13,7 +13,7 @@ class MediaItem extends HTMLElement {
 
         const dateNode = this.shadowRoot.getElementById('date');
         dateNode.setAttribute("dateTime", apod.date);
-        var parts =apod.date.split('-');
+        var parts = apod.date.split('-');
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const date = new Date(parts[0], parts[1] - 1, parts[2]);
         dateNode.textContent = date.toLocaleDateString('en-US', options);
@@ -27,25 +27,25 @@ class MediaItem extends HTMLElement {
 
         const contentNode = this.shadowRoot.getElementById('content');
 
-        if(apod.copyright) {
+        if (apod.copyright) {
             const div = document.createElement('div');
             div.id = 'copyright-holder';
-            div.textContent = 'Copyright holder: ' +  apod.copyright;
+            div.textContent = 'Copyright holder: ' + apod.copyright;
             contentNode.appendChild(div);
         }
 
         let elem = await this.createMediaElement(apod.hdurl || apod.url, apod.media_type);
-        if(!elem) {
+        if (!elem) {
             return;
         }
-        if(elem.nodeName === 'IFRAME') {
+        if (elem.nodeName === 'IFRAME') {
             const div = document.createElement('div');
             div.id = 'iframe-container';
             div.appendChild(elem);
             elem = div;
         }
 
-        if(elem.nodeName === 'IMG') {
+        if (elem.nodeName === 'IMG') {
             this.style.width = elem.width + 'px';
         }
 
@@ -56,19 +56,19 @@ class MediaItem extends HTMLElement {
     async createMediaElement(url, type) {
         return new Promise((resolve, reject) => {
             let elem;
-            if(type === 'image') {
+            if (type === 'image') {
                 elem = document.createElement('img');
                 elem.addEventListener('load', () => {
                     resolve(elem);
                 });
-                setTimeout(() => {reject("Took too long")}, 12000);
-            } else if(type === 'video') {
+                setTimeout(() => { reject("Took too long") }, 64000);
+            } else if (type === 'video') {
                 elem = document.createElement('iframe');
                 resolve(elem);
             } else {
                 resolve();
             }
-            elem.src = url;            
+            elem.src = url;
         });
     }
 
@@ -78,70 +78,83 @@ class MediaItem extends HTMLElement {
         let snippet = text.substr(0, maxSnippedLen);
 
         let i = maxSnippedLen;
-        while(snippet[i] !== ' ' && i !== minSnippetLen) {
+        while (snippet[i] !== ' ' && i !== minSnippetLen) {
             --i;
         }
 
         return snippet.substr(0, i);
     }
 }
-
 customElements.define('media-item', MediaItem);
 
+let isSorted = false;
 const apods = [];
 
-async function getRandomApod() {
-    //const response = await fetch('https://api.nasa.gov/planetary/apod?api_key=yxi0nUUOlqUR4P5GLIWK7cbGAGWmO8uZR6dIMoK7' + '&date=' + getRandomDayInRange());
-    if(apods.length < 8) {
-        if(apods.length === 0) {
+async function getApod() {
+    if (apods.length < 8) {
+        if (apods.length === 0) {
             const response = await fetchApods();
             apods.push(...(await response.json()));
         } else {
-            fetchApods()
-                .then(async (response) => {
-                    apods.push(...(await response.json()));
-                });
+            fetchApods().then(async (response) => {
+                apods.push(...(await response.json()));
+            });
         }
     }
     return apods.pop();
 }
 
-async function fetchApods() {
-    return await fetch('https://api.nasa.gov/planetary/apod?api_key=yxi0nUUOlqUR4P5GLIWK7cbGAGWmO8uZR6dIMoK7' + '&count=' + 16);
+let lastTime = Date.now();
+const duration = 1209600000;
+function fetchApods() {
+    const endpointPrefix = 'https://api.nasa.gov/planetary/apod?api_key=yxi0nUUOlqUR4P5GLIWK7cbGAGWmO8uZR6dIMoK7';
+    if(isSorted) {
+        const end = lastTime;
+        const start = lastTime - duration;
+        lastTime = start - 86400000;
+        return fetch(endpointPrefix + `&start_date=${millesecondsToDate(start)}&end_date=${millesecondsToDate(end)}`);
+
+    } else {
+        return fetch(endpointPrefix + '&count=' + 16);
+    }
 }
 
-/*
-function getRandomDayInRange() {
-    // APOD starts at 1995-06-16
-    const start = 803264401000;
-    const end = Date.now();
-    const date = new Date(Math.floor((end - start) * Math.random() + start));
-    return date.toISOString().substr(0, 10);
+function millesecondsToDate(milleseconds) {
+    const date = new Date(milleseconds);
+    return date.toISOString().slice(0, 10);
+    //return `${date.getUTCFullYear()}-${date.getUTCMonth() + 1}-${date.getUTCDate()}`;
 }
-*/
+
 
 let lastMediaItem = null;
 let numLoading = 0;
-const maxLoad = 8;
+
+const maxLoad = 4;
+
 const mediaItems = [];
 
-
 const container = document.getElementById('container');
-
+const spinner = document.getElementById('spinner');
 
 async function append() {
-    if(isFilled(lastMediaItem)) {
-        return;
-    }
-    if(numLoading === maxLoad) {
-        console.warn('max loading');
+    if (numLoading === maxLoad) {
         setTimeout(append, 4000);
         return;
     }
+
+    const bottom = lastMediaItem !== null ? lastMediaItem.getBoundingClientRect().bottom : 0;
+    if (bottom > window.innerHeight * 3) {
+        return;
+    }
+
     let mediaItem;
     try {
         ++numLoading;
-        const apod = await getRandomApod();
+
+        const apod = await getApod();
+        
+        append();
+
         /*
         const apod = {
             date: "2017-07-04",
@@ -153,10 +166,10 @@ async function append() {
         };
         */
         //console.log(apod);
-        if(apod.url && apod.url.substr(0, 2) === '//') {
+        if (apod.url && apod.url.substr(0, 2) === '//') {
             apod.url = 'https://' + apod.url;
         }
-        if(apod.hdurl && apod.hdurl.substr(0, 2) === '//') {
+        if (apod.hdurl && apod.hdurl.substr(0, 2) === '//') {
             apod.hdurl = 'https://' + apod.hdurl;
         }
         mediaItem = document.createElement('media-item');
@@ -164,34 +177,39 @@ async function append() {
     } finally {
         --numLoading;
     }
-    //const div = document.createElement('div');
-    //div.classList.add('hybrid-width');
-    //div.appendChild(mediaItem);
 
-
-    //document.body.appendChild(div);
-    container.appendChild(mediaItem);
-
+    container.insertBefore(mediaItem, spinner);
 
     mediaItems.push(mediaItem);
-    let removeMediaItems = [];
-    if(mediaItems.length > 24) {
-        removeMediaItems = mediaItems.splice(0, 8);
-    }
-    for(let elem of removeMediaItems) {
-        elem.remove();
+
+    if (mediaItems.length > 24) {
+        const removeMediaItems = mediaItems.splice(0, 8);
+        for (let elem of removeMediaItems) {
+            elem.remove();
+        }
     }
 
     lastMediaItem = mediaItem;
-    append();
 }
 
-function isFilled(lastMediaItem) {
-    if(lastMediaItem && (lastMediaItem.getBoundingClientRect().bottom) > window.innerHeight * 3) {
-        return true;
-    }
-    return false;
+const sortButton = document.getElementById('sort-toggle-button');
+const searchParams = new URLSearchParams(document.location.search);
+if(searchParams.get('sort') === 'date') {
+    isSorted = true;
+    sortButton.textContent = 'Sort by Random';
+} else {
+    sortButton.textContent = 'Sort by Newer';
 }
+
+
+
+sortButton.addEventListener('click', function() {
+    if(isSorted) {
+        window.location.href = '/';
+    } else {
+        window.location.href = '/?sort=date';
+    }
+});
 
 document.addEventListener('scroll', append);
 append();
